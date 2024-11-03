@@ -34,10 +34,17 @@ class GridWorld:
                  ):
         grid_world_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         sys.path.insert(0, grid_world_path)
+
+        # Set up the map
         self.map_name = map_name
         self.maze_map = np.array(importlib.import_module("sciborg.environments.grid_world.maps." + self.map_name).maze_array)
         self.height, self.width = self.maze_map.shape
         self.agent_coordinates = None
+
+        # Setup spaces
+        # > Observation space: Discrete, |S| = number of tiles in free space
+
+
 
         low = np.array([.5 - self.width / 2, - (self.height / 2 - .5)])
         high = np.array([self.width / 2 - .5, - (.5 - self.height / 2)])
@@ -255,48 +262,6 @@ class GridWorld:
         _, distance = self.best_path(observation_1, observation_2)
         coordinates_2 = self.get_coordinates(observation_2)
         return distance[coordinates_2]
-
-    def show_path_on_image(self, observation_1, observation_2, file_directory, file_name, colors) -> None:
-        """
-        Save an image of the environment with many path draw on it
-        :param observation_1: start observation,
-        :param observation_2: destination observation,
-        :param file_directory: destination where the image should be saved
-        :param file_name: name of the future image (without .png)
-        :param colors: list of colors of shape [[R1, G1, B1], [R1, G2, B2], ... ] and len = len(paths)
-        """
-
-        best_path = self.best_path(observation_1, observation_2)
-
-        if isinstance(observation_1, tuple):
-            coordinates_1 = observation_1
-        else:
-            coordinates_1 = self.get_coordinates(observation_1)
-        if isinstance(observation_2, tuple):
-            coordinates_2 = observation_2
-        else:
-            coordinates_2 = self.get_coordinates(observation_2)
-
-        if not self.is_available(coordinates_1[0], coordinates_1[1]) or not self.is_available(coordinates_2[0],
-                                                                                              coordinates_2[1]):
-            print("one of these observations is not available")
-
-        # Generate image
-        image = self.get_environment_background()
-
-        # Draw this path
-        for coordinates in best_path.coordinates:
-            tile_x, tile_y = coordinates
-            self.set_tile_color(image, tile_x, tile_y, colors)
-
-        # Save image
-        image = Image.fromarray(image)
-        create_dir(file_directory)
-        if not file_name.endswith(".png"):
-            if len(file_name.split(".")) > 1:
-                file_name = "".join(file_name.split(".")[:-1])  # Remove the last extension
-            file_name += ".png"
-        image.save(file_directory + file_name)
 
     def sample_reachable_observation(self):
         observation_coordinates = np.flip(random.choice(np.argwhere(self.maze_map != 1)))

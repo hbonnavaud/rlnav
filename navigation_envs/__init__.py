@@ -1,8 +1,5 @@
-from .environment import Environment
-from .goal_conditioned_environment import GoalConditionedEnvironment
 import importlib
-from .. import settings
-
+supress_import_warnings = True
 
 # For every environment module, we use try except statements in case one environment have unmeet dependencies but the
 # user wants to use the others.
@@ -12,7 +9,7 @@ from .. import settings
 try:
     from .grid_world import *
 except Exception as e:
-    if not settings.supress_import_warnings:
+    if not supress_import_warnings:
         print(f"Warning: module 'grid_world' cannot be imported due to the following error: ", e, sep="")
 
 
@@ -20,19 +17,19 @@ except Exception as e:
 try:
     from .point_maze import *
 except Exception as e:
-    if not settings.supress_import_warnings:
+    if not supress_import_warnings:
         print(f"Warning: module 'point_maze' cannot be imported due to the following error: ", e, sep="")
 
 # Import ant-maze
 try:
     from .ant_maze import *
 except Exception as e:
-    if not settings.supress_import_warnings:
+    if not supress_import_warnings:
         print(f"Warning: module 'ant_maze' cannot be imported due to the following error: ", e, sep="")
 
 # Import doom-maze
 try:
     from .doom_maze import *
 except Exception as e:
-    if not settings.supress_import_warnings:
+    if not supress_import_warnings:
         print(f"Warning: module 'doom_maze' cannot be imported due to the following error: ", e, sep="")
