@@ -6,7 +6,7 @@ import importlib
 def build_map(map_name, corridors_width=3):
     if isinstance(map_name, MapsIndex):
         map_name = map_name.value
-    maze_map = importlib.import_module("navigation_envs.maps." + map_name).maze_array
+    maze_map = importlib.import_module("rlnav.maps." + map_name).maze_array
 
     # Find rows that can be duplicated
     rows_to_duplicate = []

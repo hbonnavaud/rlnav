@@ -1,4 +1,23 @@
-import importlib
+from gymnasium.envs.registration import register
+
+from grid_world import GridWorld
+from point_maze import PointMazeV0
+
+register(
+    id="GridWorld-v0",
+    entry_point="rlnav.grid_world.grid_world:GridWorld",
+    kwargs={},
+)
+register(
+    id="PointMaze-v0",
+    entry_point="rlnav.point_maze.point_maze_v0:PointMazeV0",
+    kwargs={},
+)
+
+__all__ = ["GridWorld", "PointMazeV0"]
+
+
+# OLD STUFF BELOW
 supress_import_warnings = True
 
 # For every environment module, we use try except statements in case one environment have unmeet dependencies but the
