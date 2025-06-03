@@ -10,7 +10,7 @@ from typing import Any, Tuple, Optional, Dict
 from rlnav.point_maze.utils.indexes import TileType, Colors, PointMazeMapsIndex
 
 
-class PointMazeV1(Env):
+class PointMazeV0(Env):
     """
     2D Point Maze Navigation Environment.
     In the code below, x/y refers to the agent's position in the observation space, i/j refers to the agent's position
@@ -318,7 +318,7 @@ class PointMazeV1(Env):
 
     def copy(self):
         """Create a copy of this environment."""
-        return PointMazeV1(
+        return PointMaze(
             map_name=self.map_name,
             action_noise=self.action_noise,
             reset_anywhere=self.reset_anywhere,

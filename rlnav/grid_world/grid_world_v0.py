@@ -41,7 +41,7 @@ class Directions(Enum):
     RIGHT = 3
 
 
-class GridWorld(Env):
+class GridWorldV0(Env):
     def __init__(self, **params):
         self.map_name: str = params.get("map_name", GridWorldMapsIndex.EMPTY.value)
         self.goal_conditioned: bool = params.get("goal_conditioned", True)

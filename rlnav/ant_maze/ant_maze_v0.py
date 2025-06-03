@@ -41,7 +41,7 @@ def get_quaternion_from_euler(roll, pitch, yaw):
     return [qx, qy, qz, qw]
 
 
-class AntMaze(Env):
+class AntMazeV0(Env):
 
     name = "Visual Ant-Maze"
 
