@@ -1,7 +1,8 @@
 from gymnasium.envs.registration import register
-
-from grid_world import GridWorld
-from point_maze import PointMazeV0
+from .grid_world import GridWorld
+from .point_maze import PointMazeV1
+from .ant_maze import AntMaze, AntMazeMapsIndex
+from .visual_ant_maze import VisualAntMaze, VisualAntMazeMapsIndex
 
 register(
     id="GridWorld-v0",
@@ -9,12 +10,12 @@ register(
     kwargs={},
 )
 register(
-    id="PointMaze-v0",
-    entry_point="rlnav.point_maze.point_maze_v0:PointMazeV0",
+    id="PointMaze-v1",
+    entry_point="rlnav.point_maze.point_maze_v1:PointMazeV1",
     kwargs={},
 )
 
-__all__ = ["GridWorld", "PointMazeV0"]
+__all__ = ["GridWorld", "PointMazeV1"]
 
 
 # OLD STUFF BELOW
@@ -32,7 +33,7 @@ except Exception as e:
         print(f"Warning: module 'grid_world' cannot be imported due to the following error: ", e, sep="")
 
 
-# Import point-maze
+# Import point-maze-v1
 try:
     from .point_maze import *
 except Exception as e:
