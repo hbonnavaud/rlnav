@@ -10,7 +10,7 @@ from scipy.spatial import distance
 import numpy as np
 from omg import WAD, MapEditor
 from vizdoom import DoomGame, ScreenResolution, Mode, Gameobservation
-from gym.spaces import Box, Discrete
+from gymnasium.spaces import Box, Discrete
 from .maps.maps_index import MapsIndex
 from .maps.tile_type import TileType
 
