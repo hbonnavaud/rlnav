@@ -23,7 +23,17 @@ register(
 # Hence, we want to import AntMaze if and only if mujoco_py is installed.
 # So we do this trick:
 # Conditionally import AntMaze
+
+# Disable prints caused by mujoco import / compilation for more readability
+devnull = open(os.devnull, 'w')
+old_stdout = sys.stdout
+old_stderr = sys.stderr
+sys.stdout = devnull
+sys.stderr = devnull
+
+# Try to import mujoco
 try:
+
     import mujoco_py  # only to trigger ImportError if not available
 
     from .ant_maze import AntMazeV0, AntMazeMapsIndex
@@ -40,3 +50,7 @@ except Exception as e:
     # print("WARNING, AntMaze has not been imported due to an exception while trying to import mujoco_py.")
     # Skip AntMaze if mujoco_py isn't installed
     pass
+
+# Restore stdout and stderr.
+sys.stdout = old_stdout
+sys.stderr = old_stderr
