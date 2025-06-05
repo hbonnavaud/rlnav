@@ -60,5 +60,11 @@ def main():
     git_commit_push(args.message)
     print("Changes committed and pushed.")
 
+    print("Building package...")
+    subprocess.run(["python3", "-m", "build"], check=True)
+
+    print("Uploading to PyPI...")
+    subprocess.run(["twine", "upload", "dist/*"], check=True)
+
 if __name__ == "__main__":
     main()

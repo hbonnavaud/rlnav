@@ -164,4 +164,11 @@ cython_debug/
 
 *.egg-info*
 *.toml
-*.venv
+*venv*
+.ropeproject
+.vscode
+*.toml
+*dist*
+.env
+*settings.json*
+*update*
