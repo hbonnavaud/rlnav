@@ -37,8 +37,9 @@ class PointMazeV0(Env):
         self.goal_conditioned = params.get("goal_conditioned", False)
         self.render_mode = params.get("render_mode", "rgb_array")
         self.render_resolution = params.get("render_resolution", 10)  # Pixels per grid cell
-
-        assert isinstance(self.action_noise, float) and self.action_noise > 0, "Invalid action_noise value."
+        if isinstance(self.action_noise, int):
+            self.action_noise = float(self.action_noise)
+        assert isinstance(self.action_noise, float) and self.action_noise >= 0, "Invalid action_noise value."
         assert isinstance(self.reset_anywhere, bool), "reset_anywhere must be a boolean."
         assert isinstance(self.goal_conditioned, bool), "goal_conditioned must be a boolean."
         assert self.render_mode in self.metadata["render_modes"], f"Invalid render_mode: {self.render_mode}"
