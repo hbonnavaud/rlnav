@@ -1,1 +1,1 @@
-from .grid_world_v0 import GridWorld, GridWorldMapsIndex
+from .grid_world_v0 import GridWorldV0, GridWorldMapsIndex
