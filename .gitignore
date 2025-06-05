@@ -132,7 +132,7 @@ cython_debug/
 *.toml
 *venv*
 .ropeproject
-.vscode
+*.vscode*
 *.toml
 *dist*
 .env
