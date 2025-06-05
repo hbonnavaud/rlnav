@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+import argparse
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+SETUP_PATH = Path("setup.py")
+VERSION_PATTERN = re.compile(r'version\s*=\s*[\'"](\d+)\.(\d+)\.(\d+)[\'"]')
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Bump version and commit changes.")
+    parser.add_argument("-l", "--level", type=int, choices=[1, 2, 3], default=3,
+                        help="Version level to increment: 1=major, 2=minor, 3=patch (default)")
+    parser.add_argument("-m", "--message", type=str, default=".",
+                        help="Git commit message (default: '.')")
+    return parser.parse_args()
+
+def read_setup_version():
+    text = SETUP_PATH.read_text()
+    match = VERSION_PATTERN.search(text)
+    if not match:
+        print("Error: version not found in setup.py", file=sys.stderr)
+        sys.exit(1)
+    return tuple(map(int, match.groups())), text
+
+def bump_version(version, level):
+    major, minor, patch = version
+    if level == 1:
+        return (major + 1, 0, 0)
+    elif level == 2:
+        return (major, minor + 1, 0)
+    elif level == 3:
+        return (major, minor, patch + 1)
+
+def replace_version(text, new_version):
+    new_version_str = ".".join(map(str, new_version))
+    return VERSION_PATTERN.sub(f'version="{new_version_str}"', text), new_version_str
+
+def git_commit_push(message):
+    subprocess.run(["git", "add", "."], check=True)
+    subprocess.run(["git", "commit", "-m", message], check=True)
+    subprocess.run(["git", "push"], check=True)
+
+def main():
+    args = parse_args()
+    
+    if not SETUP_PATH.exists():
+        print("Error: setup.py not found in current directory", file=sys.stderr)
+        sys.exit(1)
+
+    current_version, content = read_setup_version()
+    new_version = bump_version(current_version, args.level)
+    new_content, new_version_str = replace_version(content, new_version)
+
+    SETUP_PATH.write_text(new_content)
+    print(f"Updated version: {'.'.join(map(str, current_version))} → {new_version_str}")
+
+    git_commit_push(args.message)
+    print("Changes committed and pushed.")
+
+if __name__ == "__main__":
+    main()

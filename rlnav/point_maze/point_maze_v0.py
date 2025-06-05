@@ -225,9 +225,8 @@ class PointMazeV0(Env):
             RGB array representation of the environment
         """
         # Create a blank canvas
-        img_height = self.height * self.render_resolution
-        img_width = self.width * self.render_resolution
-        img = np.zeros((img_height, img_width, 3), dtype=np.uint8)
+        img = np.zeros((self.height * self.render_resolution, 
+                        self.width * self.render_resolution, 3), dtype=np.uint8)
 
         # Draw the maze grid
         for i in range(self.height):
@@ -265,40 +264,12 @@ class PointMazeV0(Env):
         # Assuming self.agent_x and self.agent_y are the continuous coordinates (bounded)
         # and self.x_bounds = (x_min, x_max), self.y_bounds = (y_min, y_max) define the bounds
 
-        # Map from continuous space to pixel space
-        x_min, y_min = self.observation_space.low
-        x_max, y_max = self.observation_space.high
-
         if show_agent:
-            # Normalize the agent's position to the image dimensions
-            agent_x_norm = (self.agent_observation[0] - x_min) / (x_max - x_min) * img_width
-            agent_y_norm = (self.agent_observation[1] - y_min) / (y_max - y_min) * img_height
-
-            agent_x_center = int(agent_x_norm)
-            agent_y_center = int(agent_y_norm)
-            agent_radius = self.render_resolution // 3
-
-            # Draw a circle for the agent
-            y, x = np.ogrid[:img_height, :img_width]
-            dist = np.sqrt((y - agent_y_center) ** 2 + (x - agent_x_center) ** 2)
-            mask = dist <= agent_radius
-            img[mask] = Colors.AGENT.value
+            img = self.place_point(img, Colors.AGENT.value, *self.agent_observation)
 
         # Draw the goal if goal-conditioned and with continuous coordinates
         if show_rewards and self.goal_conditioned and hasattr(self, 'goal_x') and hasattr(self, 'goal_y'):
-            # Map from continuous space to pixel space
-            goal_x_norm = (self.goal_x - x_min) / (x_max - x_min) * img_width
-            goal_y_norm = (self.goal_y - y_min) / (y_max - y_min) * img_height
-
-            goal_x_center = int(goal_x_norm)
-            goal_y_center = int(goal_y_norm)
-            goal_radius = self.render_resolution // 3
-
-            # Draw a circle for the goal
-            y, x = np.ogrid[:img_height, :img_width]
-            dist = np.sqrt((y - goal_y_center) ** 2 + (x - goal_x_center) ** 2)
-            mask = dist <= goal_radius
-            img[mask] = Colors.GOAL.value
+            img = self.place_point(img, Colors.GOAL.value, self.goal_x, self.goal_y)
 
         if self.render_mode == "human":
             # Display the image using matplotlib
@@ -309,6 +280,27 @@ class PointMazeV0(Env):
             plt.show()
 
         return img
+
+    def place_point(self, image: np.ndarray, color, position_x, position_y, radius: Optional[float] = None) -> np.ndarray:
+        x_min, y_min = self.observation_space.low
+        x_max, y_max = self.observation_space.high
+        img_height, img_width = image.shape[:2]
+
+        # Normalize the agent's position to the image dimensions
+        x_norm = (position_x - x_min) / (x_max - x_min) * img_width
+        y_norm = (position_y - y_min) / (y_max - y_min) * img_height
+
+        x_center = int(x_norm)
+        y_center = int(y_norm)
+        if not radius:
+            radius = self.render_resolution // 3
+
+        # Draw a circle for the agent
+        y, x = np.ogrid[:img_height, :img_width]
+        dist = np.sqrt((y - y_center) ** 2 + (x - x_center) ** 2)
+        mask = dist <= radius
+        image[mask] = color
+        return image
 
     def close(self):
         """Clean up resources."""

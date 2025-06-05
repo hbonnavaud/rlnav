@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="rlnav",
-    version="0.1.0",
+    version="1.1.0",
     description="Reinforcement Learning Navigation Environments for Gym and Gymnasium",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="Hedwin Bonnavaud",
+    author_email="hbonnavaud@gmail.com",
     packages=find_packages(),
     install_requires=[
         "gym>=0.26",

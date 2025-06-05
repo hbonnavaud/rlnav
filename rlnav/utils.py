@@ -11,7 +11,7 @@ def create_dir(directory_name: Union[str, Path], replace=False):
     directory_path += os.path.sep
 
     if os.path.isdir(directory_path):
-        # Directory already exists
+        # Directory already exists.
         if replace:
             shutil.rmtree(directory_path)
         else:
