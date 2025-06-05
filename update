@@ -4,6 +4,7 @@ import argparse
 import re
 import subprocess
 import sys
+import shutil
 from pathlib import Path
 
 SETUP_PATH = Path("setup.py")
@@ -59,6 +60,11 @@ def main():
 
     git_commit_push(args.message)
     print("Changes committed and pushed.")
+
+    print("Cleaning dist/")
+    dist_path = Path("dist")
+    if dist_path.exists():
+        shutil.rmtree(dist_path)
 
     print("Building package...")
     subprocess.run(["python3", "-m", "build"], check=True)
