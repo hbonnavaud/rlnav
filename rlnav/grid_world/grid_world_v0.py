@@ -10,7 +10,7 @@ from gymnasium import spaces, Env
 
 class GridWorldMapsIndex(Enum):
     EMPTY = "empty_room"
-    FOUR_ROOMS = "four_rooms"
+    FOUR_ROOMS = "four_rooms" 
     MEDIUM = "medium_maze"
     HARD = "hard_maze"
     EXTREME = "extreme_maze"
