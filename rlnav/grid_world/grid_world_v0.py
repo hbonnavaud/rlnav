@@ -75,26 +75,34 @@ class GridWorldV0(Env):
         assert len(start_positions) > 0, "No valid start positions found."
         self.agent_coordinates = tuple(random.choice(start_positions))
 
-        return self._get_observation(*self.agent_coordinates), {}
+        return self._get_observation(*self.agent_coordinates), {"goal": self.goal} if self.goal_conditioned else {}
 
     def step(self, action: int):
+        info = {
+            "agent_coordinates": self.agent_coordinates,
+            "agent_new_coordinates": self.agent_coordinates,
+        }
+        if self.goal_conditioned:
+            info["goal"] = self.goal.copy()
+
         action = self._apply_stochasticity(action)
         new_i, new_j = self._compute_new_position(action)
 
         if not self._is_valid_move(new_i, new_j):
-            return self._get_observation(*self.agent_coordinates), 0, False, False, {}
+            return self._get_observation(*self.agent_coordinates), 0, False, False, info
 
         tile_type = self.get_tile_type(new_i, new_j)
         reward = -1 if tile_type == TileType.TRAP else 0
-        done = tile_type in {TileType.REWARD, TileType.TRAP}
+        terminated = tile_type in {TileType.REWARD, TileType.TRAP}
 
         if self.goal_conditioned:
             if (new_i, new_j) == self.goal_position:
-                reward = 1
-                done = True
+                reward = 0
+                terminated = True
 
         self.agent_coordinates = (new_i, new_j)
-        return self._get_observation(new_i, new_j), reward, done, done, {}
+        info["agent_new_coordinates"] = self.agent_coordinates
+        return self._get_observation(new_i, new_j), reward, terminated, False, info
 
     def _apply_stochasticity(self, action: int) -> int:
         if self.stochasticity > 0.0 and random.random() < self.stochasticity:

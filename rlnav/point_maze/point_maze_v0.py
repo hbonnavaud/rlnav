@@ -140,8 +140,7 @@ class PointMazeV0(Env):
         info = {}
         if self.goal_conditioned:
             self.goal = self._sample_reachable_position()
-            # Return both observation and goal
-            return np.concatenate([self.agent_observation.copy(), self.goal.copy()]), info
+            info["goal"] = self.goal.copy()
 
         return self.agent_observation.copy(), info
 
@@ -206,16 +205,12 @@ class PointMazeV0(Env):
         if self.goal_conditioned:
             distance_to_goal = np.linalg.norm(self.agent_observation - self.goal)
             info["distance_to_goal"] = distance_to_goal
+            info["goal"] = self.goal.copy()
 
             # Add goal-based reward component
             if distance_to_goal < 0.5:  # Within half a tile of goal
                 reward += 5.0
                 terminated = True
-
-            # Return concatenated observation for goal-conditioned case
-            return np.concatenate(
-                [self.agent_observation.copy(), self.goal.copy()]), reward, terminated, truncated, info
-
         return self.agent_observation.copy(), reward, terminated, truncated, info
 
     def render(self, show_agent=True, show_rewards=True, show_grid=False):

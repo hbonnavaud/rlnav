@@ -155,22 +155,7 @@ class AntMazeV0(Env):
 
         # Return observation
         observation = self.get_observation()
-        return observation, self.goal
-
-    def soft_reset(self):
-        """
-        reset ant except orientation and position.
-        """
-        initial_qpos = np.array([0.55, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.0, 0.0, -1.0, 0.0, 1.0])
-        initial_qvel = np.zeros(14)
-        new_observation = np.concatenate((self.sim.data.qpos[:2], initial_qpos, initial_qvel))
-        new_observation[:2] = self.sim.data.qpos[:2]  # Keep ant position
-        new_observation[4] = self.sim.data.qpos[4]  # Keep ant orientation
-        self.sim.data.qpos[:] = new_observation[:len(self.sim.data.qpos)]
-        self.sim.data.qvel[:] = new_observation[len(self.sim.data.qpos):]
-        self.sim.step()
-
-        return self.get_observation()
+        return observation, {"goal": self.goal}
 
     # Execute low-level action for number of frames specified by num_frames_skip
     def step(self, action):
@@ -180,7 +165,7 @@ class AntMazeV0(Env):
         new_observation = self.get_observation()
 
         reached = (np.abs(new_observation[:len(self.goal)] - self.goal) < self.goal_thresholds[:len(self.goal)]).all()
-        return self.get_observation(), 0 if reached else -1, reached, {"reached": reached}
+        return self.get_observation(), 0 if reached else -1, reached, False, {"reached": reached}
 
     def update_graph(self, graph: nx.DiGraph):
         for node_id, node_attributes in graph.nodes(data=True):
