@@ -20,7 +20,15 @@ class PointMazeV0(Env):
     name = "Point-Maze"
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 10}
 
-    def __init__(self, **params):
+    def __init__(
+            self,
+            map_name: str = PointMazeMapsIndex.EMPTY.value,
+            action_noise: float = 1.0,
+            reset_anywhere: bool = False,
+            goal_conditioned: bool = False,
+            render_mode: str = "rgb_array",
+            render_resolution: int = 10
+            ):
         """
         Initialize the Point Maze environment.
 
@@ -31,12 +39,13 @@ class PointMazeV0(Env):
             goal_conditioned: Whether to use goal-conditioned RL (default: False)
             render_mode: Rendering mode (default: "rgb_array")
         """
-        self.map_name: str = params.get("map_name", PointMazeMapsIndex.EMPTY.value)
-        self.action_noise = params.get("action_noise", 1.0)
-        self.reset_anywhere = params.get("reset_anywhere", True)
-        self.goal_conditioned = params.get("goal_conditioned", False)
-        self.render_mode = params.get("render_mode", "rgb_array")
-        self.render_resolution = params.get("render_resolution", 10)  # Pixels per grid cell
+        self.map_name = map_name
+        self.action_noise = action_noise
+        self.reset_anywhere = reset_anywhere
+        self.goal_conditioned = goal_conditioned
+        self.render_mode = render_mode
+        self.render_resolution = render_resolution
+        
         if isinstance(self.action_noise, int):
             self.action_noise = float(self.action_noise)
         assert isinstance(self.action_noise, float) and self.action_noise >= 0, "Invalid action_noise value."

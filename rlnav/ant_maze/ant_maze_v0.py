@@ -45,7 +45,13 @@ class AntMazeV0(Env):
 
     name = "Visual Ant-Maze"
 
-    def __init__(self, maze_name="empty_room", image_resolution_per_tile=50, show=False, random_orientation=False):
+    def __init__(
+            self, 
+            maze_name="empty_room", 
+            image_resolution_per_tile=50,
+            random_orientation=False
+        ):
+
         """
         Initialise an ant maze environment.
         THe model is automatically created using a map specification defined in /mujoco_files/maps/
