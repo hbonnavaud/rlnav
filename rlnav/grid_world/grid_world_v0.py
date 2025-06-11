@@ -3,7 +3,7 @@ import importlib
 import math
 import random
 from enum import Enum
-from typing import Tuple, Optional, Any
+from typing import Tuple, Optional, Any, Union
 import numpy as np
 from gymnasium import spaces, Env
 
@@ -47,6 +47,7 @@ class GridWorldV0(Env):
         self.goal_conditioned: bool = params.get("goal_conditioned", True)
         self.reset_anywhere: bool = params.get("reset_anywhere", True)
         self.stochasticity: float = params.get("stochasticity", 0.0)
+        self.render_tile_width: float = params.get("render_tile_width", 10)  # in px
         assert 0.0 <= self.stochasticity <= 1.0, f"Invalid stochasticity value: {self.stochasticity}"
 
         self.goal_position: Optional[Tuple[int, int]] = None
@@ -75,7 +76,7 @@ class GridWorldV0(Env):
         assert len(start_positions) > 0, "No valid start positions found."
         self.agent_coordinates = tuple(random.choice(start_positions))
 
-        return self._get_observation(*self.agent_coordinates), {"goal": self.goal} if self.goal_conditioned else {}
+        return self._get_observation(*self.agent_coordinates), {"goal": self.goal_position} if self.goal_conditioned else {}
 
     def step(self, action: int):
         info = {
@@ -83,7 +84,7 @@ class GridWorldV0(Env):
             "agent_new_coordinates": self.agent_coordinates,
         }
         if self.goal_conditioned:
-            info["goal"] = self.goal.copy()
+            info["goal"] = self.goal_position.copy()
 
         action = self._apply_stochasticity(action)
         new_i, new_j = self._compute_new_position(action)
@@ -127,6 +128,9 @@ class GridWorldV0(Env):
     def _get_observation(self, i: int, j: int) -> int:
         return i * self.width + j
 
+    def _get_position(self, observation: Union[int, np.ndarray]) -> Tuple[int, int]:
+        return int(observation // self.width), int(observation % self.width)
+
     def get_tile_type(self, i: int, j: int) -> TileType:
         return TileType(self.maze_array[i, j])
 
@@ -141,16 +145,9 @@ class GridWorldV0(Env):
         return self._is_valid_move(i, j)
     
     def render(self, show_agent=True, show_rewards=True):
-        pixels_per_tile = 10
-        def set_tile_color(image_, i, j, color):
-            image_[expanded_array == TileType.REWARD.value] = Colors.EMPTY.value
-            i_start, i_end = i * pixels_per_tile, (i + 1) * pixels_per_tile
-            j_start, j_end = j * pixels_per_tile, (j + 1) * pixels_per_tile
-            image_[i_start:i_end, j_start:j_end, :] = color
-            return image_
 
         # Second trial
-        expanded_array = np.kron(self.maze_array, np.ones((pixels_per_tile, pixels_per_tile), dtype=int))
+        expanded_array = np.kron(self.maze_array, np.ones((self.render_tile_width, self.render_tile_width), dtype=int))
         image = np.zeros(expanded_array.shape + (3,), dtype=np.uint8)
         image[expanded_array == TileType.WALL.value] = Colors.WALL.value
         image[expanded_array == TileType.EMPTY.value] = Colors.EMPTY.value
@@ -158,11 +155,20 @@ class GridWorldV0(Env):
         if show_rewards:
             image[expanded_array == TileType.TRAP.value] = Colors.TRAP.value
             if self.goal_conditioned:
-                image = set_tile_color(image, *self.goal_position, Colors.GOAL.value)
+                image = self.set_tile_color(image, *self.goal_position, Colors.GOAL.value)
             else:
                 image[expanded_array == TileType.REWARD.value] = Colors.GOAL.value
         if show_agent:
-            image = set_tile_color(image, *self.agent_coordinates, Colors.AGENT.value)
+            image = self.set_tile_color(image, *self.agent_coordinates, Colors.AGENT.value)
+        return image
+
+    def set_tile_color(self, image, *args, color):
+        if len(args) not in (1, 2):
+            raise TypeError("set_tile_color expects either (observation, color=...) or (i, j, color=...)")
+        i, j = self._get_position(*args) if len(args) == 1 else args
+        i_start, i_end = i * self.render_tile_width, (i + 1) * self.render_tile_width
+        j_start, j_end = j * self.render_tile_width, (j + 1) * self.render_tile_width
+        image[i_start:i_end, j_start:j_end, :] = color
         return image
                 
     def copy(self):
