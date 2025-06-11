@@ -44,6 +44,7 @@ class Directions(Enum):
 class GridWorldV0(Env):
     def __init__(self, **params):
         self.map_name: str = params.get("map_name", GridWorldMapsIndex.EMPTY.value)
+        self.maze_array: Union[list, None] = params.get("maze_array", None)
         self.goal_conditioned: bool = params.get("goal_conditioned", True)
         self.reset_anywhere: bool = params.get("reset_anywhere", True)
         self.stochasticity: float = params.get("stochasticity", 0.0)
@@ -53,7 +54,9 @@ class GridWorldV0(Env):
         self.goal_position: Optional[Tuple[int, int]] = None
         self.agent_coordinates: Optional[Tuple[int, int]] = None
 
-        self.maze_array = np.array(importlib.import_module(f"rlnav.grid_world.maps.{self.map_name}").maze_array)
+        if self.maze_array is None:
+            self.maze_array = importlib.import_module(f"rlnav.grid_world.maps.{self.map_name}").maze_array
+        self.maze_array = np.array(self.maze_array)
         self.height, self.width = self.maze_array.shape
 
         self.observation_space = spaces.Discrete(self.height * self.width)
@@ -162,9 +165,9 @@ class GridWorldV0(Env):
             image = self.set_tile_color(image, *self.agent_coordinates, Colors.AGENT.value)
         return image
 
-    def set_tile_color(self, image, *args, color):
+    def set_tile_color(self, image, color, *args):
         if len(args) not in (1, 2):
-            raise TypeError("set_tile_color expects either (observation, color=...) or (i, j, color=...)")
+            raise TypeError("set_tile_color expects either (image, color, observation) or (image, color, i, j...)")
         i, j = self._get_position(*args) if len(args) == 1 else args
         i_start, i_end = i * self.render_tile_width, (i + 1) * self.render_tile_width
         j_start, j_end = j * self.render_tile_width, (j + 1) * self.render_tile_width

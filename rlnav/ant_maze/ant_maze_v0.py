@@ -1,3 +1,4 @@
+import importlib
 import math
 import random
 import numpy as np
@@ -47,9 +48,10 @@ class AntMazeV0(Env):
 
     def __init__(
             self, 
-            maze_name="empty_room", 
-            image_resolution_per_tile=50,
-            random_orientation=False
+            maze_name: str = "empty_room",
+            maze_array: Union[list, None] = None,
+            image_resolution_per_tile: int = 50,
+            random_orientation: bool = False
         ):
 
         """
@@ -62,7 +64,10 @@ class AntMazeV0(Env):
         self.random_orientation = random_orientation
         self.maze_name = maze_name
         self.image_resolution_per_tile = image_resolution_per_tile
-        self.maze_array, xml_spec_path = generate_xml(maze_name)
+
+        if maze_array is None:
+            maze_array = importlib.import_module("rlnav.ant_maze.maps." + maze_name).maze_array
+        self.maze_array, xml_spec_path = generate_xml(maze_array)
         self.maze_array = np.array(self.maze_array)
         self.maze_array_height, self.maze_array_width = self.maze_array.shape
 

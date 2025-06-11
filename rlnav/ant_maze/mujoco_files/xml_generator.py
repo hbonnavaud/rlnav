@@ -57,7 +57,7 @@ def load_walls(maze_array):
     return horizontal_walls, vertical_walls
 
 
-def generate_xml(map_name: str) -> (dict, str):
+def generate_xml(maze_array: list) -> (dict, str):
     """
     Generate an ant-maze environment model from a base model and maze walls description.
     :returns: (as a tuple of two elements)
@@ -78,7 +78,7 @@ def generate_xml(map_name: str) -> (dict, str):
             world_body_node = child
 
     # Load maps data
-    maze_array = np.array(importlib.import_module("rlnav.ant_maze.maps." + map_name).maze_array)
+    maze_array = np.array(maze_array)
 
     # Load walls
     width = len(maze_array[0])

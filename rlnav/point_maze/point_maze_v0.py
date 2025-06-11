@@ -5,7 +5,7 @@ import numpy as np
 import importlib
 import random
 from matplotlib import pyplot as plt
-from typing import Any, Tuple, Optional, Dict
+from typing import Any, Tuple, Optional, Dict, Union
 
 from rlnav.point_maze.utils.indexes import TileType, Colors, PointMazeMapsIndex
 
@@ -22,7 +22,8 @@ class PointMazeV0(Env):
 
     def __init__(
             self,
-            map_name: str = PointMazeMapsIndex.EMPTY.value,
+            maze_name: str = PointMazeMapsIndex.EMPTY.value,
+            maze_array: Union[list, None] = None,
             action_noise: float = 1.0,
             reset_anywhere: bool = False,
             goal_conditioned: bool = False,
@@ -39,7 +40,6 @@ class PointMazeV0(Env):
             goal_conditioned: Whether to use goal-conditioned RL (default: False)
             render_mode: Rendering mode (default: "rgb_array")
         """
-        self.map_name = map_name
         self.action_noise = action_noise
         self.reset_anywhere = reset_anywhere
         self.goal_conditioned = goal_conditioned
@@ -54,11 +54,9 @@ class PointMazeV0(Env):
         assert self.render_mode in self.metadata["render_modes"], f"Invalid render_mode: {self.render_mode}"
 
         # Load the maze map from the given map name
-        module_path = f"rlnav.point_maze.maps.{self.map_name}"
-        try:
-            self.maze_array = np.array(importlib.import_module(module_path).maze_array, dtype=np.float16)
-        except (ImportError, AttributeError) as e:
-            raise ValueError(f"Failed to load maze map '{self.map_name}': {e}")
+        if maze_array is None:
+            maze_array = importlib.import_module(f"rlnav.point_maze.maps.{maze_name}").maze_array
+        self.maze_array = np.array(maze_array, dtype=np.float16)
 
         self.height, self.width = self.maze_array.shape
 
