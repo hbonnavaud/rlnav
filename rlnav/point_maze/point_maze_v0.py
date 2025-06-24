@@ -195,12 +195,28 @@ class PointMazeV0(Env):
         i, j = self.get_coordinates(self.agent_observation)
         tile_type = self.maze_array[i, j]
 
-        # Calculate reward and check termination conditions
-        reward = 10.0 if tile_type == TileType.REWARD.value else -0.1
-
         # Check if agent reached trap
         terminated = tile_type == TileType.TRAP.value
-        truncated = False
+        if self.goal_conditioned:
+            if terminated:
+                # If we too ka trap, we failed, no matter the goal distance.
+                reward = -1
+            else:
+                distance_to_goal = np.linalg.norm(self.agent_observation - self.goal)
+                info["distance_to_goal"] = distance_to_goal
+                info["goal"] = self.goal.copy()
+
+                # Add goal-based reward component
+                if distance_to_goal < 0.5:  # Within half a tile of goal
+                    reward = 0
+                    terminated = True
+                    info["reached"] = True
+                else:
+                    reward = -1
+                    info["reached"] = False
+        else:
+            # Calculate reward and check termination conditions
+            reward = 0 if tile_type == TileType.REWARD.value else -1
 
         # Additional info for debugging
         info = {
@@ -208,18 +224,7 @@ class PointMazeV0(Env):
             "coordinates": (i, j),
             "tile_type": int(tile_type)
         }
-
-        # If goal-conditioned, add distance to goal in info
-        if self.goal_conditioned:
-            distance_to_goal = np.linalg.norm(self.agent_observation - self.goal)
-            info["distance_to_goal"] = distance_to_goal
-            info["goal"] = self.goal.copy()
-
-            # Add goal-based reward component
-            if distance_to_goal < 0.5:  # Within half a tile of goal
-                reward += 5.0
-                terminated = True
-        return self.agent_observation.copy(), reward, terminated, truncated, info
+        return self.agent_observation.copy(), reward, terminated, False, info
 
     def render(self, show_agent=True, show_rewards=True, show_grid=False):
         """
