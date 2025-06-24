@@ -61,7 +61,7 @@ class GridWorldV0(Env):
 
         self.observation_space = spaces.Discrete(self.height * self.width)
         self.action_space = spaces.Discrete(len(Directions))
-        self.goal_space = None if self.goal_conditioned else self.observation_space
+        self.goal_space = self.observation_space if self.goal_conditioned else None
 
         self.reset()
 
