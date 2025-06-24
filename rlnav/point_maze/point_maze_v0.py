@@ -195,6 +195,13 @@ class PointMazeV0(Env):
         i, j = self.get_coordinates(self.agent_observation)
         tile_type = self.maze_array[i, j]
 
+        # Additional info for debugging
+        info = {
+            "position": self.agent_observation.copy(),
+            "coordinates": (i, j),
+            "tile_type": int(tile_type)
+        }
+
         # Check if agent reached trap
         terminated = tile_type == TileType.TRAP.value
         if self.goal_conditioned:
@@ -217,13 +224,7 @@ class PointMazeV0(Env):
         else:
             # Calculate reward and check termination conditions
             reward = 0 if tile_type == TileType.REWARD.value else -1
-
-        # Additional info for debugging
-        info = {
-            "position": self.agent_observation.copy(),
-            "coordinates": (i, j),
-            "tile_type": int(tile_type)
-        }
+        
         return self.agent_observation.copy(), reward, terminated, False, info
 
     def render(self, show_agent=True, show_rewards=True, show_grid=False):
