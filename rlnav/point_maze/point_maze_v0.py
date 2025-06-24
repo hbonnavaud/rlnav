@@ -5,7 +5,7 @@ import numpy as np
 import importlib
 import random
 from matplotlib import pyplot as plt
-from typing import Any, Tuple, Optional, Dict
+from typing import Any, Tuple, Optional, Dict, Union
 
 from rlnav.point_maze.utils.indexes import TileType, Colors, PointMazeMapsIndex
 
@@ -20,7 +20,16 @@ class PointMazeV0(Env):
     name = "Point-Maze"
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 10}
 
-    def __init__(self, **params):
+    def __init__(
+            self,
+            maze_name: str = PointMazeMapsIndex.EMPTY.value,
+            maze_array: Union[list, None] = None,
+            action_noise: float = 1.0,
+            reset_anywhere: bool = False,
+            goal_conditioned: bool = False,
+            render_mode: str = "rgb_array",
+            render_resolution: int = 10
+            ):
         """
         Initialize the Point Maze environment.
 
@@ -31,12 +40,12 @@ class PointMazeV0(Env):
             goal_conditioned: Whether to use goal-conditioned RL (default: False)
             render_mode: Rendering mode (default: "rgb_array")
         """
-        self.map_name: str = params.get("map_name", PointMazeMapsIndex.EMPTY.value)
-        self.action_noise = params.get("action_noise", 1.0)
-        self.reset_anywhere = params.get("reset_anywhere", True)
-        self.goal_conditioned = params.get("goal_conditioned", False)
-        self.render_mode = params.get("render_mode", "rgb_array")
-        self.render_resolution = params.get("render_resolution", 10)  # Pixels per grid cell
+        self.action_noise = action_noise
+        self.reset_anywhere = reset_anywhere
+        self.goal_conditioned = goal_conditioned
+        self.render_mode = render_mode
+        self.render_resolution = render_resolution
+        
         if isinstance(self.action_noise, int):
             self.action_noise = float(self.action_noise)
         assert isinstance(self.action_noise, float) and self.action_noise >= 0, "Invalid action_noise value."
@@ -45,11 +54,9 @@ class PointMazeV0(Env):
         assert self.render_mode in self.metadata["render_modes"], f"Invalid render_mode: {self.render_mode}"
 
         # Load the maze map from the given map name
-        module_path = f"rlnav.point_maze.maps.{self.map_name}"
-        try:
-            self.maze_array = np.array(importlib.import_module(module_path).maze_array, dtype=np.float16)
-        except (ImportError, AttributeError) as e:
-            raise ValueError(f"Failed to load maze map '{self.map_name}': {e}")
+        if maze_array is None:
+            maze_array = importlib.import_module(f"rlnav.point_maze.maps.{maze_name}").maze_array
+        self.maze_array = np.array(maze_array, dtype=np.float16)
 
         self.height, self.width = self.maze_array.shape
 
@@ -141,8 +148,7 @@ class PointMazeV0(Env):
         info = {}
         if self.goal_conditioned:
             self.goal = self._sample_reachable_position()
-            # Return both observation and goal
-            return np.concatenate([self.agent_observation.copy(), self.goal.copy()]), info
+            info["goal"] = self.goal.copy()
 
         return self.agent_observation.copy(), info
 
@@ -207,16 +213,12 @@ class PointMazeV0(Env):
         if self.goal_conditioned:
             distance_to_goal = np.linalg.norm(self.agent_observation - self.goal)
             info["distance_to_goal"] = distance_to_goal
+            info["goal"] = self.goal.copy()
 
             # Add goal-based reward component
             if distance_to_goal < 0.5:  # Within half a tile of goal
                 reward += 5.0
                 terminated = True
-
-            # Return concatenated observation for goal-conditioned case
-            return np.concatenate(
-                [self.agent_observation.copy(), self.goal.copy()]), reward, terminated, truncated, info
-
         return self.agent_observation.copy(), reward, terminated, truncated, info
 
     def render(self, show_agent=True, show_rewards=True, show_grid=False):

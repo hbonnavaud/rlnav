@@ -1,6 +1,8 @@
 from gymnasium.envs.registration import register
 from .grid_world import GridWorldV0, GridWorldMapsIndex
 from .point_maze import PointMazeV0, PointMazeMapsIndex
+import os
+import sys
 
 __all__ = [
     "GridWorldV0", "GridWorldMapsIndex",
