@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="rlnav",
-    version="1.4.5",
+    version="1.4.6",
     description="Reinforcement Learning Navigation Environments for Gymnasium",
     author="Hedwin Bonnavaud",
     author_email="hbonnavaud@gmail.com",
