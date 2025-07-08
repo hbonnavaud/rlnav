@@ -69,7 +69,8 @@ class PointMazeV0(Env):
             low=np.array([-1.0, -1.0], dtype=np.float32),
             high=np.array([1.0, 1.0], dtype=np.float32)
         )
-        self.goal_space = Box(low=self.observation_space.low[:2], high=self.observation_space.high[:2]) if self.goal_conditioned else None
+        if self.goal_conditioned:
+            self.goal_space = Box(low=self.observation_space.low[:2], high=self.observation_space.high[:2]) if self.goal_conditioned else None
 
         # Initialize state variables
         self.agent_observation = None
